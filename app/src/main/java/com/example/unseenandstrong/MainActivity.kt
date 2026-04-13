@@ -4,44 +4,26 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.unseenandstrong.ui.theme.UnseenAndStrongTheme
+import androidx.lifecycle.ViewModelProvider
+import com.example.unseenandstrong.data.local.UnseenDatabase
+import com.example.unseenandstrong.ui.checkin.CheckInViewModel
+import com.example.unseenandstrong.ui.checkin.DailyCheckInScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val database = UnseenDatabase.getDatabase(applicationContext)
+        val checkInViewModel = ViewModelProvider(
+            this,
+            CheckInViewModel.Factory(database.dailyCheckInDao())
+        )[CheckInViewModel::class.java]
+
         setContent {
-            UnseenAndStrongTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            DailyCheckInScreen(
+                onSave = checkInViewModel::saveCheckIn
+            )
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    UnseenAndStrongTheme {
-        Greeting("Android")
     }
 }
