@@ -1,5 +1,7 @@
 package com.example.unseenandstrong.ui.comfort
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +34,7 @@ fun ComfortBoxScreen(
     isFlareDay: Boolean = false
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
+    val context = LocalContext.current
 
     UnseenAndStrongTheme {
         Surface(
@@ -46,7 +50,10 @@ fun ComfortBoxScreen(
             ) {
                 // I'm Struggling Button
                 Button(
-                    onClick = { /* Handle click, perhaps show more comfort */ },
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=UfcAVejs1Ac"))
+                        context.startActivity(intent)
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = SoftBlushPink,
                         contentColor = DeepFogGrey

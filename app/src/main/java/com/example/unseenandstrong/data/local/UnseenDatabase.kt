@@ -8,16 +8,19 @@ import com.example.unseenandstrong.data.local.checkin.DailyCheckInDao
 import com.example.unseenandstrong.data.local.checkin.DailyCheckInEntity
 import com.example.unseenandstrong.data.local.journal.JournalDao
 import com.example.unseenandstrong.data.local.journal.JournalEntryEntity
+import com.example.unseenandstrong.data.local.routine.RoutineDao
+import com.example.unseenandstrong.data.local.routine.RoutineTaskEntity
 
 @Database(
-    entities = [DailyCheckInEntity::class, JournalEntryEntity::class],
-    version = 2,
+    entities = [DailyCheckInEntity::class, JournalEntryEntity::class, RoutineTaskEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class UnseenDatabase : RoomDatabase() {
 
     abstract fun dailyCheckInDao(): DailyCheckInDao
     abstract fun journalDao(): JournalDao
+    abstract fun routineDao(): RoutineDao
 
     companion object {
         @Volatile
