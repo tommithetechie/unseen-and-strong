@@ -16,6 +16,5 @@ interface RoutineDao {
     fun getAllTasks(): Flow<List<RoutineTaskEntity>>
 
     @Query("UPDATE routine_tasks SET isCompleted = :isCompleted WHERE id = :taskId")
-    suspend fun updateTaskCompletion(taskId: Long, isCompleted: Boolean)
+    suspend fun updateTaskCompletion(taskId: Long, isCompleted: Boolean): Int
 }
-
