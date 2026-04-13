@@ -5,11 +5,21 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.unseenandstrong.data.local.journal.JournalDao
 import com.example.unseenandstrong.data.local.journal.JournalEntryEntity
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class JournalViewModel(
     private val journalDao: JournalDao
 ) : ViewModel() {
+
+    val entries: StateFlow<List<JournalEntryEntity>> =
+        journalDao.getAllJournalEntries().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
     fun saveUnseenWin(content: String) {
         saveEntry(content = content, isUnseenWin = true)

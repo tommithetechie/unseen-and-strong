@@ -11,20 +11,20 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
+private val FlareDayColorScheme = lightColorScheme(
     primary = LavenderPurple,
     secondary = SoftBlushPink,
     tertiary = SoftBlushPink,
     background = NightLavender,
     surface = NightLavender,
-    onPrimary = DeepFogGrey,
-    onSecondary = DeepFogGrey,
-    onTertiary = DeepFogGrey,
-    onBackground = DeepFogGrey,
-    onSurface = DeepFogGrey
+    onPrimary = PaleCloudWhite,
+    onSecondary = PaleCloudWhite,
+    onTertiary = PaleCloudWhite,
+    onBackground = PaleCloudWhite,
+    onSurface = PaleCloudWhite
 )
 
-private val LightColorScheme = lightColorScheme(
+private val NormalColorScheme = lightColorScheme(
     primary = SoftBlushPink,
     secondary = LavenderPurple,
     tertiary = LavenderPurple,
@@ -39,7 +39,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun UnseenAndStrongTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    isFlareDay: Boolean = false,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
@@ -47,11 +47,11 @@ fun UnseenAndStrongTheme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (isFlareDay) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        isFlareDay -> FlareDayColorScheme
+        else -> NormalColorScheme
     }
 
     MaterialTheme(

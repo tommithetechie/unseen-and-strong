@@ -16,18 +16,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.unseenandstrong.R
 import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
 import com.example.unseenandstrong.ui.theme.SoftBlushPink
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
-import com.example.unseenandstrong.ui.theme.UnseenAndStrongTheme
 
 @Composable
 fun ComfortBoxScreen(
@@ -35,19 +36,20 @@ fun ComfortBoxScreen(
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val context = LocalContext.current
+    val reminders = stringArrayResource(id = R.array.gentle_reminders)
+    val strategies = stringArrayResource(id = R.array.offline_coping_strategies)
 
-    UnseenAndStrongTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = backgroundColor
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
                 // I'm Struggling Button
                 Button(
                     onClick = {
@@ -76,11 +78,6 @@ fun ComfortBoxScreen(
                     color = DeepFogGrey,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Start
-                )
-                val reminders = listOf(
-                    "You are safe. This will pass.",
-                    "Your feelings are valid.",
-                    "Take it one moment at a time."
                 )
                 reminders.forEach { reminder ->
                     Card(
@@ -113,12 +110,6 @@ fun ComfortBoxScreen(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Start
                 )
-                val strategies = listOf(
-                    "Breathe deeply for 1 minute",
-                    "Drink a glass of water",
-                    "Step outside for fresh air",
-                    "Hold an ice cube in your hand"
-                )
                 strategies.forEach { strategy ->
                     Card(
                         colors = CardDefaults.cardColors(
@@ -141,7 +132,6 @@ fun ComfortBoxScreen(
                         }
                     }
                 }
-            }
         }
     }
 }

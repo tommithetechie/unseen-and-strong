@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Unseen and Strong</string>
+    <string-array name="gentle_reminders">
+        <item>You are safe. This will pass.</item>
+        <item>Your feelings are valid.</item>
+        <item>Take it one moment at a time.</item>
+    </string-array>
+    <string-array name="offline_coping_strategies">
+        <item>Breathe deeply for 1 minute</item>
+        <item>Drink a glass of water</item>
+        <item>Step outside for fresh air</item>
+        <item>Hold an ice cube in your hand</item>
+    </string-array>
 </resources>

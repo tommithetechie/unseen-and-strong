@@ -10,12 +10,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.example.unseenandstrong.data.local.UnseenDatabase
@@ -36,7 +45,10 @@ import com.example.unseenandstrong.ui.routine.RoutineScreen
 import com.example.unseenandstrong.ui.routine.RoutineViewModel
 import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
+import com.example.unseenandstrong.ui.theme.NightLavender
 import com.example.unseenandstrong.ui.theme.SoftBlushPink
+import com.example.unseenandstrong.ui.theme.SoftCloudGrey
+import com.example.unseenandstrong.ui.theme.UnseenAndStrongTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -77,38 +89,59 @@ class MainActivity : ComponentActivity() {
             var currentScreen by rememberSaveable { mutableStateOf(HomeScreen.CheckIn) }
             val isFlareDayActive by appViewModel.isFlareDayActive.collectAsState()
             val routineTasks by routineViewModel.tasks.collectAsState()
+            val appBackground = if (isFlareDayActive) NightLavender else SoftCloudGrey
 
-            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
-                ScreenSwitcher(
-                    currentScreen = currentScreen,
-                    onScreenSelected = { currentScreen = it }
-                )
+            UnseenAndStrongTheme(
+                isFlareDay = isFlareDayActive,
+                content = {
+                    Scaffold(
+                        containerColor = appBackground,
+                        bottomBar = {
+                            BottomNavigationBar(
+                                currentScreen = currentScreen,
+                                onScreenSelected = { currentScreen = it }
+                            )
+                        }
+                    ) { innerPadding ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            color = appBackground
+                        ) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                FlareDayModeToggle(
+                                    isFlareDayActive = isFlareDayActive,
+                                    onToggle = appViewModel::toggleFlareDayMode
+                                )
 
-                FlareDayModeToggle(
-                    isFlareDayActive = isFlareDayActive,
-                    onToggle = appViewModel::toggleFlareDayMode
-                )
-
-                when (currentScreen) {
-                    HomeScreen.CheckIn -> DailyCheckInScreen(
-                        isFlareDay = isFlareDayActive,
-                        onSave = checkInViewModel::saveCheckIn
-                    )
-                    HomeScreen.ComfortBox -> ComfortBoxScreen(
-                        isFlareDay = isFlareDayActive
-                    )
-                    HomeScreen.Journal -> JournalScreen(
-                        isFlareDay = isFlareDayActive,
-                        onSaveWin = journalViewModel::saveUnseenWin,
-                        onSaveEntry = journalViewModel::saveJournalEntry
-                    )
-                    HomeScreen.Routine -> RoutineScreen(
-                        tasks = routineTasks,
-                        onToggleTask = routineViewModel::toggleTask,
-                        isFlareDay = isFlareDayActive
-                    )
+                                Crossfade(targetState = currentScreen, label = "screen_transition") { screen ->
+                                    when (screen) {
+                                        HomeScreen.CheckIn -> DailyCheckInScreen(
+                                            isFlareDay = isFlareDayActive,
+                                            onSave = checkInViewModel::saveCheckIn
+                                        )
+                                        HomeScreen.ComfortBox -> ComfortBoxScreen(
+                                            isFlareDay = isFlareDayActive
+                                        )
+                                        HomeScreen.Journal -> JournalScreen(
+                                            isFlareDay = isFlareDayActive,
+                                            entriesFlow = journalViewModel.entries,
+                                            onSaveWin = journalViewModel::saveUnseenWin,
+                                            onSaveEntry = journalViewModel::saveJournalEntry
+                                        )
+                                        HomeScreen.Routine -> RoutineScreen(
+                                            tasks = routineTasks,
+                                            onToggleTask = routineViewModel::toggleTask,
+                                            isFlareDay = isFlareDayActive
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            }
+            )
         }
     }
 }
@@ -117,44 +150,47 @@ private enum class HomeScreen {
     CheckIn,
     ComfortBox,
     Journal,
-    Routine
+    Routine;
+
+    val label: String
+        get() = when (this) {
+            CheckIn -> "Check-In"
+            ComfortBox -> "Comfort"
+            Journal -> "Journal"
+            Routine -> "Routine"
+        }
+
+    val icon: ImageVector
+        get() = when (this) {
+            CheckIn -> Icons.Default.CheckCircle
+            ComfortBox -> Icons.Default.Favorite
+            Journal -> Icons.Default.Edit
+            Routine -> Icons.Default.List
+        }
 }
 
 @Composable
-private fun ScreenSwitcher(
+private fun BottomNavigationBar(
     currentScreen: HomeScreen,
     onScreenSelected: (HomeScreen) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    NavigationBar(
+        containerColor = SoftCloudGrey,
+        contentColor = DeepFogGrey
     ) {
-        ScreenButton(
-            label = "Check-in",
-            selected = currentScreen == HomeScreen.CheckIn,
-            onClick = { onScreenSelected(HomeScreen.CheckIn) },
-            modifier = Modifier.weight(1f)
-        )
-        ScreenButton(
-            label = "Comfort",
-            selected = currentScreen == HomeScreen.ComfortBox,
-            onClick = { onScreenSelected(HomeScreen.ComfortBox) },
-            modifier = Modifier.weight(1f)
-        )
-        ScreenButton(
-            label = "Journal",
-            selected = currentScreen == HomeScreen.Journal,
-            onClick = { onScreenSelected(HomeScreen.Journal) },
-            modifier = Modifier.weight(1f)
-        )
-        ScreenButton(
-            label = "Routine",
-            selected = currentScreen == HomeScreen.Routine,
-            onClick = { onScreenSelected(HomeScreen.Routine) },
-            modifier = Modifier.weight(1f)
-        )
+        HomeScreen.entries.forEach { screen ->
+            NavigationBarItem(
+                selected = currentScreen == screen,
+                onClick = { onScreenSelected(screen) },
+                icon = {
+                    Icon(
+                        imageVector = screen.icon,
+                        contentDescription = screen.label
+                    )
+                },
+                label = { Text(text = screen.label) }
+            )
+        }
     }
 }
 
@@ -184,24 +220,5 @@ private fun FlareDayModeToggle(
                 uncheckedTrackColor = SoftBlushPink.copy(alpha = 0.45f)
             )
         )
-    }
-}
-
-@Composable
-private fun ScreenButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected) LavenderPurple else SoftBlushPink,
-            contentColor = DeepFogGrey
-        ),
-        modifier = modifier
-    ) {
-        Text(text = label)
     }
 }

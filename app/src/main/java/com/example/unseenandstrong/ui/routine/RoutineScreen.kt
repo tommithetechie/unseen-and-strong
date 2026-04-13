@@ -25,7 +25,6 @@ import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
-import com.example.unseenandstrong.ui.theme.UnseenAndStrongTheme
 
 @Composable
 fun RoutineScreen(
@@ -35,17 +34,16 @@ fun RoutineScreen(
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
 
-    UnseenAndStrongTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = backgroundColor
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
                 Text(
                     text = "Gentle Routine Builder",
                     style = MaterialTheme.typography.headlineSmall,
@@ -95,7 +93,6 @@ fun RoutineScreen(
                         }
                     }
                 }
-            }
         }
     }
 }

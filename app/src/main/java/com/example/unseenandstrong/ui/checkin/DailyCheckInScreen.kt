@@ -3,6 +3,7 @@ package com.example.unseenandstrong.ui.checkin
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,7 +34,8 @@ import com.example.unseenandstrong.ui.theme.NightLavender
 import com.example.unseenandstrong.ui.theme.SoftBlushPink
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
-import com.example.unseenandstrong.ui.theme.UnseenAndStrongTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun DailyCheckInScreen(
@@ -48,17 +50,17 @@ fun DailyCheckInScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    UnseenAndStrongTheme {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = backgroundColor
+    Box(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = backgroundColor
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()) // Enable vertical scrolling
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxSize()
-                ) {
                     Text(
                         text = "Daily Check-in",
                         style = MaterialTheme.typography.headlineSmall,
@@ -137,7 +139,7 @@ fun DailyCheckInScreen(
                             unfocusedTextColor = DeepFogGrey
                         ),
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
                             .padding(bottom = 32.dp)
                     )
 
@@ -156,27 +158,26 @@ fun DailyCheckInScreen(
                             containerColor = SoftBlushPink,
                             contentColor = DeepFogGrey
                         ),
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = "Save my day",
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
-                }
             }
-            SnackbarHost(
-                hostState = snackbarHostState,
-                snackbar = { data ->
-                    Snackbar(
-                        snackbarData = data,
-                        containerColor = SoftCloudGrey,
-                        contentColor = DeepFogGrey
-                    )
-                },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = SoftCloudGrey,
+                    contentColor = DeepFogGrey
+                )
+            },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
