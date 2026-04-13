@@ -10,15 +10,21 @@ import com.example.unseenandstrong.ui.checkin.CheckInViewModel
 import com.example.unseenandstrong.ui.checkin.DailyCheckInScreen
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
-        val database = UnseenDatabase.getDatabase(applicationContext)
-        val checkInViewModel = ViewModelProvider(
+    private val database: UnseenDatabase by lazy {
+        UnseenDatabase.getDatabase(applicationContext)
+    }
+
+    private val checkInViewModel: CheckInViewModel by lazy {
+        ViewModelProvider(
             this,
             CheckInViewModel.Factory(database.dailyCheckInDao())
         )[CheckInViewModel::class.java]
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         setContent {
             DailyCheckInScreen(

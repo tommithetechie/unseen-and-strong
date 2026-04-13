@@ -10,9 +10,8 @@ import kotlinx.coroutines.flow.Flow
 interface JournalDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entry: JournalEntryEntity): Long
+    suspend fun insertJournalEntry(entry: JournalEntryEntity): Long
 
     @Query("SELECT * FROM journal_entries ORDER BY timestamp DESC")
-    fun getAllEntries(): Flow<List<JournalEntryEntity>>
+    fun getAllJournalEntries(): Flow<List<JournalEntryEntity>>
 }
-
