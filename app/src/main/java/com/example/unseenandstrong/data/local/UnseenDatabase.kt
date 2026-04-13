@@ -6,11 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.unseenandstrong.data.local.checkin.DailyCheckInDao
 import com.example.unseenandstrong.data.local.checkin.DailyCheckInEntity
+import com.example.unseenandstrong.data.local.journal.JournalDao
+import com.example.unseenandstrong.data.local.journal.JournalEntryEntity
 
-@Database(entities = [DailyCheckInEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [DailyCheckInEntity::class, JournalEntryEntity::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class UnseenDatabase : RoomDatabase() {
 
     abstract fun dailyCheckInDao(): DailyCheckInDao
+    abstract fun journalDao(): JournalDao
 
     companion object {
         @Volatile
@@ -22,11 +29,12 @@ abstract class UnseenDatabase : RoomDatabase() {
                     context.applicationContext,
                     UnseenDatabase::class.java,
                     "unseen_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
-
