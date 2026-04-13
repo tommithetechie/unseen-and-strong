@@ -1,6 +1,7 @@
 package com.example.unseenandstrong.ui.routine
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unseenandstrong.data.local.routine.RoutineTaskEntity
 import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
+import com.example.unseenandstrong.ui.theme.PaleCloudWhite
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 
 @Composable
@@ -33,6 +36,7 @@ fun RoutineScreen(
     isFlareDay: Boolean = false
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
+    val contrastTextColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -44,55 +48,91 @@ fun RoutineScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-                Text(
-                    text = "Gentle Routine Builder",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = DeepFogGrey
-                )
-                Text(
-                    text = "Every little bit counts. No pressure.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = DeepFogGrey
-                )
+            Text(
+                text = "Gentle Routine Builder",
+                style = MaterialTheme.typography.headlineSmall,
+                color = contrastTextColor
+            )
+            Text(
+                text = "Every little bit counts. No pressure.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = contrastTextColor
+            )
 
+            if (isFlareDay) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Flare Day Mode is active. Your only goal today is to rest and survive. Permission to do absolutely nothing is granted.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = contrastTextColor,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(tasks, key = { it.id }) { task ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = SoftCloudGrey.copy(alpha = 0.85f)
-                            )
-                        ) {
-                            Row(
+                    if (tasks.isEmpty()) {
+                        item {
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    .padding(vertical = 40.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Checkbox(
-                                    checked = task.isCompleted,
-                                    onCheckedChange = { onToggleTask(task) },
-                                    colors = CheckboxDefaults.colors(
-                                        checkedColor = LavenderPurple,
-                                        checkmarkColor = DeepFogGrey,
-                                        uncheckedColor = DeepFogGrey,
-                                        disabledUncheckedColor = DeepFogGrey.copy(alpha = 0.4f)
-                                    )
-                                )
                                 Text(
-                                    text = task.taskName,
+                                    text = "Nothing yet. Even planning is a win.",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = DeepFogGrey,
-                                    modifier = Modifier.weight(1f)
+                                    color = contrastTextColor,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
+                            }
+                        }
+                    } else {
+                        items(tasks, key = { it.id }) { task ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = SoftCloudGrey.copy(alpha = 0.85f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Checkbox(
+                                        checked = task.isCompleted,
+                                        onCheckedChange = { onToggleTask(task) },
+                                        colors = CheckboxDefaults.colors(
+                                            checkedColor = LavenderPurple,
+                                            checkmarkColor = DeepFogGrey,
+                                            uncheckedColor = DeepFogGrey,
+                                            disabledUncheckedColor = DeepFogGrey.copy(alpha = 0.4f)
+                                        )
+                                    )
+                                    Text(
+                                        text = task.taskName,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = DeepFogGrey,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
                             }
                         }
                     }
                 }
+            }
         }
     }
 }
@@ -109,3 +149,12 @@ private fun RoutineScreenPreview() {
     )
 }
 
+@Preview(showBackground = true)
+@Composable
+private fun RoutineScreenFlareDayPreview() {
+    RoutineScreen(
+        tasks = emptyList(),
+        onToggleTask = {},
+        isFlareDay = true
+    )
+}

@@ -35,6 +35,7 @@ import com.example.unseenandstrong.data.local.journal.JournalEntryEntity
 import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
+import com.example.unseenandstrong.ui.theme.PaleCloudWhite
 import com.example.unseenandstrong.ui.theme.SoftBlushPink
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 import java.time.Instant
@@ -59,7 +60,8 @@ fun JournalScreen(
 
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val historyCardColor = if (isFlareDay) NightLavender.copy(alpha = 0.82f) else SoftCloudGrey
-    val historyTextColor = if (isFlareDay) SoftCloudGrey else DeepFogGrey
+    val contrastTextColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
+    val historyTextColor = contrastTextColor
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -87,23 +89,23 @@ fun JournalScreen(
                             Text(
                                 text = "Unseen Wins",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = DeepFogGrey
+                                color = contrastTextColor
                             )
                             Text(
                                 text = "Did you do something hard today that no one saw?",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = DeepFogGrey
+                                color = contrastTextColor
                             )
                             OutlinedTextField(
                                 value = winContent,
                                 onValueChange = { winContent = it },
-                                placeholder = { Text("Share your small victory...", color = DeepFogGrey) },
+                                placeholder = { Text("Share your small victory...", color = contrastTextColor) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = LavenderPurple,
                                     unfocusedBorderColor = LavenderPurple.copy(alpha = 0.5f),
-                                    cursorColor = DeepFogGrey,
-                                    focusedTextColor = DeepFogGrey,
-                                    unfocusedTextColor = DeepFogGrey
+                                    cursorColor = contrastTextColor,
+                                    focusedTextColor = contrastTextColor,
+                                    unfocusedTextColor = contrastTextColor
                                 ),
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -119,7 +121,7 @@ fun JournalScreen(
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = LavenderPurple,
-                                    contentColor = DeepFogGrey
+                                    contentColor = contrastTextColor
                                 ),
                                 modifier = Modifier.align(Alignment.End)
                             ) {
@@ -142,18 +144,18 @@ fun JournalScreen(
                             Text(
                                 text = "Surviving the Day",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = DeepFogGrey
+                                color = contrastTextColor
                             )
                             OutlinedTextField(
                                 value = entryContent,
                                 onValueChange = { entryContent = it },
-                                placeholder = { Text("You don't have to be productive today. Just be here.", color = DeepFogGrey) },
+                                placeholder = { Text("You don't have to be productive today. Just be here.", color = contrastTextColor) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = SoftBlushPink,
                                     unfocusedBorderColor = SoftBlushPink.copy(alpha = 0.5f),
-                                    cursorColor = DeepFogGrey,
-                                    focusedTextColor = DeepFogGrey,
-                                    unfocusedTextColor = DeepFogGrey
+                                    cursorColor = contrastTextColor,
+                                    focusedTextColor = contrastTextColor,
+                                    unfocusedTextColor = contrastTextColor
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 10,
@@ -171,7 +173,7 @@ fun JournalScreen(
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = SoftBlushPink,
-                                    contentColor = DeepFogGrey
+                                    contentColor = contrastTextColor
                                 ),
                                 modifier = Modifier.align(Alignment.End)
                             ) {
@@ -183,7 +185,7 @@ fun JournalScreen(
                     Text(
                         text = "Past Entries",
                         style = MaterialTheme.typography.titleMedium,
-                        color = historyTextColor
+                        color = contrastTextColor
                     )
 
                     LazyColumn(
@@ -195,7 +197,7 @@ fun JournalScreen(
                                 Text(
                                     text = "No saved entries yet. When you're ready, your words will appear here.",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = historyTextColor
+                                    color = contrastTextColor
                                 )
                             }
                         } else {
@@ -216,12 +218,12 @@ fun JournalScreen(
                                         Text(
                                             text = entry.content,
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = historyTextColor
+                                            color = contrastTextColor
                                         )
                                         Text(
                                             text = formatTimestamp(entry.timestamp),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = historyTextColor.copy(alpha = 0.8f)
+                                            color = contrastTextColor.copy(alpha = 0.8f)
                                         )
                                     }
                                 }
@@ -238,7 +240,7 @@ fun JournalScreen(
                     Snackbar(
                         snackbarData = data,
                         containerColor = SoftCloudGrey,
-                        contentColor = DeepFogGrey
+                        contentColor = contrastTextColor
                     )
                 }
             )

@@ -99,6 +99,7 @@ class MainActivity : ComponentActivity() {
                         bottomBar = {
                             BottomNavigationBar(
                                 currentScreen = currentScreen,
+                                isFlareDay = isFlareDayActive,
                                 onScreenSelected = { currentScreen = it }
                             )
                         }
@@ -172,10 +173,11 @@ private enum class HomeScreen {
 @Composable
 private fun BottomNavigationBar(
     currentScreen: HomeScreen,
+    isFlareDay: Boolean,
     onScreenSelected: (HomeScreen) -> Unit
 ) {
     NavigationBar(
-        containerColor = SoftCloudGrey,
+        containerColor = if (isFlareDay) NightLavender else SoftCloudGrey,
         contentColor = DeepFogGrey
     ) {
         HomeScreen.entries.forEach { screen ->
