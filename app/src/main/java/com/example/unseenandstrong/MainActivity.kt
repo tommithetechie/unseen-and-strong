@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -58,7 +59,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             var currentScreen by rememberSaveable { mutableStateOf(HomeScreen.CheckIn) }
 
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 ScreenSwitcher(
                     currentScreen = currentScreen,
                     onScreenSelected = { currentScreen = it }
