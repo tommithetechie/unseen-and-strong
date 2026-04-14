@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -57,11 +57,11 @@ fun JournalScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val entries by entriesFlow.collectAsState()
+    val scrollState = rememberScrollState()
 
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val historyCardColor = if (isFlareDay) NightLavender.copy(alpha = 0.82f) else SoftCloudGrey
     val contrastTextColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
-    val historyTextColor = contrastTextColor
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -70,169 +70,175 @@ fun JournalScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(24.dp)
-                    .fillMaxSize(),
+                    .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                    // Unseen Wins Section
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = LavenderPurple.copy(alpha = 0.1f)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = LavenderPurple.copy(alpha = 0.1f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = "Unseen Wins",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = contrastTextColor
-                            )
-                            Text(
-                                text = "Did you do something hard today that no one saw?",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = contrastTextColor
-                            )
-                            OutlinedTextField(
-                                value = winContent,
-                                onValueChange = { winContent = it },
-                                placeholder = { Text("Share your small victory...", color = contrastTextColor) },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = LavenderPurple,
-                                    unfocusedBorderColor = LavenderPurple.copy(alpha = 0.5f),
-                                    cursorColor = contrastTextColor,
-                                    focusedTextColor = contrastTextColor,
-                                    unfocusedTextColor = contrastTextColor
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Button(
-                                onClick = {
-                                    if (winContent.isNotBlank()) {
-                                        onSaveWin(winContent.trim())
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Your thought is tucked away safely.")
-                                        }
-                                        winContent = ""
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = LavenderPurple,
-                                    contentColor = contrastTextColor
-                                ),
-                                modifier = Modifier.align(Alignment.End)
-                            ) {
-                                Text("Save Win")
-                            }
-                        }
-                    }
-
-                    // Surviving the Day Section
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = SoftBlushPink.copy(alpha = 0.1f)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = "Surviving the Day",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = contrastTextColor
-                            )
-                            OutlinedTextField(
-                                value = entryContent,
-                                onValueChange = { entryContent = it },
-                                placeholder = { Text("You don't have to be productive today. Just be here.", color = contrastTextColor) },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = SoftBlushPink,
-                                    unfocusedBorderColor = SoftBlushPink.copy(alpha = 0.5f),
-                                    cursorColor = contrastTextColor,
-                                    focusedTextColor = contrastTextColor,
-                                    unfocusedTextColor = contrastTextColor
-                                ),
-                                modifier = Modifier.fillMaxWidth(),
-                                maxLines = 10,
-                                minLines = 5
-                            )
-                            Button(
-                                onClick = {
-                                    if (entryContent.isNotBlank()) {
-                                        onSaveEntry(entryContent.trim())
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Your thought is tucked away safely.")
-                                        }
-                                        entryContent = ""
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = SoftBlushPink,
-                                    contentColor = contrastTextColor
-                                ),
-                                modifier = Modifier.align(Alignment.End)
-                            ) {
-                                Text("Save Entry")
-                            }
-                        }
-                    }
-
-                    Text(
-                        text = "Past Entries",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = contrastTextColor
-                    )
-
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        if (entries.isEmpty()) {
-                            item {
+                        Text(
+                            text = "Unseen Wins",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = contrastTextColor
+                        )
+                        Text(
+                            text = "Did you do something hard today that no one saw?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = contrastTextColor
+                        )
+                        OutlinedTextField(
+                            value = winContent,
+                            onValueChange = { winContent = it },
+                            placeholder = {
                                 Text(
-                                    text = "No saved entries yet. When you're ready, your words will appear here.",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    text = "Share your small victory...",
                                     color = contrastTextColor
                                 )
-                            }
-                        } else {
-                            items(entries, key = { it.id }) { entry ->
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(containerColor = historyCardColor)
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(14.dp),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Text(
-                                            text = if (entry.isUnseenWin) "Unseen Win" else "Journal Entry",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = if (entry.isUnseenWin) LavenderPurple else SoftBlushPink
-                                        )
-                                        Text(
-                                            text = entry.content,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = contrastTextColor
-                                        )
-                                        Text(
-                                            text = formatTimestamp(entry.timestamp),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = contrastTextColor.copy(alpha = 0.8f)
-                                        )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = LavenderPurple,
+                                unfocusedBorderColor = LavenderPurple.copy(alpha = 0.5f),
+                                cursorColor = contrastTextColor,
+                                focusedTextColor = contrastTextColor,
+                                unfocusedTextColor = contrastTextColor
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Button(
+                            onClick = {
+                                if (winContent.isNotBlank()) {
+                                    onSaveWin(winContent.trim())
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Your thought is tucked away safely.")
                                     }
+                                    winContent = ""
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = LavenderPurple,
+                                contentColor = contrastTextColor
+                            ),
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(text = "Save Win")
+                        }
+                    }
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = SoftBlushPink.copy(alpha = 0.1f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Surviving the Day",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = contrastTextColor
+                        )
+                        OutlinedTextField(
+                            value = entryContent,
+                            onValueChange = { entryContent = it },
+                            placeholder = {
+                                Text(
+                                    text = "You don't have to be productive today. Just be here.",
+                                    color = contrastTextColor
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = SoftBlushPink,
+                                unfocusedBorderColor = SoftBlushPink.copy(alpha = 0.5f),
+                                cursorColor = contrastTextColor,
+                                focusedTextColor = contrastTextColor,
+                                unfocusedTextColor = contrastTextColor
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            maxLines = 10,
+                            minLines = 5
+                        )
+                        Button(
+                            onClick = {
+                                if (entryContent.isNotBlank()) {
+                                    onSaveEntry(entryContent.trim())
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Your thought is tucked away safely.")
+                                    }
+                                    entryContent = ""
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = SoftBlushPink,
+                                contentColor = contrastTextColor
+                            ),
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(text = "Save Entry")
+                        }
+                    }
+                }
+
+                Text(
+                    text = "Past Entries",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = contrastTextColor
+                )
+
+                if (entries.isEmpty()) {
+                    Text(
+                        text = "No saved entries yet. When you're ready, your words will appear here.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contrastTextColor
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        entries.forEach { entry ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = historyCardColor)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = if (entry.isUnseenWin) "Unseen Win" else "Journal Entry",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (entry.isUnseenWin) LavenderPurple else SoftBlushPink
+                                    )
+                                    Text(
+                                        text = entry.content,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = contrastTextColor
+                                    )
+                                    Text(
+                                        text = formatTimestamp(entry.timestamp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = contrastTextColor.copy(alpha = 0.8f)
+                                    )
                                 }
                             }
                         }
                     }
+                }
             }
 
-            // Snackbar Host
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter),

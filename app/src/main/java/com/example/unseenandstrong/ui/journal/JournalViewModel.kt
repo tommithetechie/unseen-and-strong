@@ -17,7 +17,7 @@ class JournalViewModel(
     val entries: StateFlow<List<JournalEntryEntity>> =
         journalDao.getAllJournalEntries().stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
 
