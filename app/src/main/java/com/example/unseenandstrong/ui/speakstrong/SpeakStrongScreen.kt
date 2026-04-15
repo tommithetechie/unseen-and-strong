@@ -30,7 +30,9 @@ import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 @Composable
 fun SpeakStrongScreen(
     viewModel: SpeakStrongViewModel,
-    isFlareDay: Boolean = false
+    isFlareDay: Boolean = false,
+    onDraftAdaRequest: () -> Unit = {},
+    onOpenResources: () -> Unit = {}
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val textColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
@@ -48,6 +50,28 @@ fun SpeakStrongScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Button(
+                onClick = onDraftAdaRequest,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LavenderPurple,
+                    contentColor = textColor
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Draft ADA Request")
+            }
+
+            Button(
+                onClick = onOpenResources,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SoftBlushPink,
+                    contentColor = textColor
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Advocacy Resources")
+            }
+
             // Tone Toggle Row
             Row(
                 modifier = Modifier.fillMaxWidth(),

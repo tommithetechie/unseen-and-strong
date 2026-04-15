@@ -16,6 +16,8 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,6 +48,14 @@ import com.example.unseenandstrong.ui.journal.JournalScreen
 import com.example.unseenandstrong.ui.journal.JournalViewModel
 import com.example.unseenandstrong.ui.routine.RoutineScreen
 import com.example.unseenandstrong.ui.routine.RoutineViewModel
+import com.example.unseenandstrong.ui.speakstrong.SpeakStrongScreen
+import com.example.unseenandstrong.ui.speakstrong.SpeakStrongViewModel
+import com.example.unseenandstrong.ui.accommodation.AccommodationScreen
+import com.example.unseenandstrong.ui.accommodation.AccommodationViewModel
+import com.example.unseenandstrong.ui.resource.ResourceScreen
+import com.example.unseenandstrong.ui.resource.ResourceViewModel
+import com.example.unseenandstrong.ui.vault.VaultScreen
+import com.example.unseenandstrong.ui.vault.VaultViewModel
 import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
@@ -84,11 +94,33 @@ class MainActivity : ComponentActivity() {
         )[RoutineViewModel::class.java]
     }
 
+    private val speakStrongViewModel: SpeakStrongViewModel by lazy {
+        ViewModelProvider(
+            this,
+            SpeakStrongViewModel.Factory(database.scriptDao())
+        )[SpeakStrongViewModel::class.java]
+    }
+
+    private val accommodationViewModel: AccommodationViewModel by lazy {
+        ViewModelProvider(this)[AccommodationViewModel::class.java]
+    }
+
+    private val resourceViewModel: ResourceViewModel by lazy {
+        ViewModelProvider(this)[ResourceViewModel::class.java]
+    }
+
     private val interactionViewModel: InteractionViewModel by lazy {
         ViewModelProvider(
             this,
             InteractionViewModel.Factory(database.interactionDao())
         )[InteractionViewModel::class.java]
+    }
+
+    private val vaultViewModel: VaultViewModel by lazy {
+        ViewModelProvider(
+            this,
+            VaultViewModel.Factory(database.vaultDocumentDao())
+        )[VaultViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -146,8 +178,36 @@ class MainActivity : ComponentActivity() {
                                             onToggleTask = routineViewModel::toggleTask,
                                             isFlareDay = isFlareDayActive
                                         )
+                                        HomeScreen.SpeakStrong -> SpeakStrongScreen(
+                                            viewModel = speakStrongViewModel,
+                                            isFlareDay = isFlareDayActive,
+                                            onDraftAdaRequest = {
+                                                currentScreen = HomeScreen.Accommodation
+                                            },
+                                            onOpenResources = {
+                                                currentScreen = HomeScreen.Resource
+                                            }
+                                        )
+                                        HomeScreen.Accommodation -> AccommodationScreen(
+                                            viewModel = accommodationViewModel,
+                                            isFlareDay = isFlareDayActive,
+                                            onBackToHub = {
+                                                currentScreen = HomeScreen.SpeakStrong
+                                            }
+                                        )
+                                        HomeScreen.Resource -> ResourceScreen(
+                                            viewModel = resourceViewModel,
+                                            isFlareDay = isFlareDayActive,
+                                            onBackToHub = {
+                                                currentScreen = HomeScreen.SpeakStrong
+                                            }
+                                        )
                                         HomeScreen.Log -> InteractionScreen(
                                             viewModel = interactionViewModel,
+                                            isFlareDay = isFlareDayActive
+                                        )
+                                        HomeScreen.Vault -> VaultScreen(
+                                            viewModel = vaultViewModel,
                                             isFlareDay = isFlareDayActive
                                         )
                                     }
@@ -166,7 +226,11 @@ private enum class HomeScreen {
     ComfortBox,
     Journal,
     Routine,
-    Log;
+    SpeakStrong,
+    Accommodation,
+    Resource,
+    Log,
+    Vault;
 
     val label: String
         get() = when (this) {
@@ -174,7 +238,11 @@ private enum class HomeScreen {
             ComfortBox -> "Comfort"
             Journal -> "Journal"
             Routine -> "Routine"
+            SpeakStrong -> "Speak Strong"
+            Accommodation -> "Accommodation"
+            Resource -> "Resources"
             Log -> "Log"
+            Vault -> "Vault"
         }
 
     val icon: ImageVector
@@ -183,7 +251,11 @@ private enum class HomeScreen {
             ComfortBox -> Icons.Default.Favorite
             Journal -> Icons.Default.Edit
             Routine -> Icons.AutoMirrored.Filled.List
+            SpeakStrong -> Icons.Default.Edit
+            Accommodation -> Icons.Default.Description
+            Resource -> Icons.Default.Description
             Log -> Icons.AutoMirrored.Filled.Assignment
+            Vault -> Icons.Default.Folder
         }
 }
 
@@ -193,13 +265,26 @@ private fun BottomNavigationBar(
     isFlareDay: Boolean,
     onScreenSelected: (HomeScreen) -> Unit
 ) {
+    val topLevelScreens = listOf(
+        HomeScreen.CheckIn,
+        HomeScreen.ComfortBox,
+        HomeScreen.Journal,
+        HomeScreen.Routine,
+        HomeScreen.SpeakStrong,
+        HomeScreen.Log,
+        HomeScreen.Vault
+    )
+    val selectedScreen = if (currentScreen == HomeScreen.Accommodation || currentScreen == HomeScreen.Resource) {
+        HomeScreen.SpeakStrong
+    } else currentScreen
+
     NavigationBar(
         containerColor = if (isFlareDay) NightLavender else SoftCloudGrey,
         contentColor = DeepFogGrey
     ) {
-        HomeScreen.entries.forEach { screen ->
+        topLevelScreens.forEach { screen ->
             NavigationBarItem(
-                selected = currentScreen == screen,
+                selected = selectedScreen == screen,
                 onClick = { onScreenSelected(screen) },
                 icon = {
                     Icon(

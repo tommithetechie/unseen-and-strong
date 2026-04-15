@@ -15,6 +15,8 @@ import com.example.unseenandstrong.data.local.routine.RoutineDao
 import com.example.unseenandstrong.data.local.routine.RoutineTaskEntity
 import com.example.unseenandstrong.data.local.script.ScriptDao
 import com.example.unseenandstrong.data.local.script.ScriptEntity
+import com.example.unseenandstrong.data.local.vault.VaultDocumentDao
+import com.example.unseenandstrong.data.local.vault.VaultDocumentEntity
 
 @Database(
     entities = [
@@ -22,9 +24,10 @@ import com.example.unseenandstrong.data.local.script.ScriptEntity
         JournalEntryEntity::class,
         RoutineTaskEntity::class,
         ScriptEntity::class,
-        InteractionEntity::class
+        InteractionEntity::class,
+        VaultDocumentEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class UnseenDatabase : RoomDatabase() {
@@ -34,6 +37,7 @@ abstract class UnseenDatabase : RoomDatabase() {
     abstract fun routineDao(): RoutineDao
     abstract fun scriptDao(): ScriptDao
     abstract fun interactionDao(): InteractionDao
+    abstract fun vaultDocumentDao(): VaultDocumentDao
 
     companion object {
         @Volatile
