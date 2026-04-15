@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.unseenandstrong.data.local.checkin.DailyCheckInDao
 import com.example.unseenandstrong.data.local.checkin.DailyCheckInEntity
+import com.example.unseenandstrong.data.local.interaction.InteractionDao
+import com.example.unseenandstrong.data.local.interaction.InteractionEntity
 import com.example.unseenandstrong.data.local.journal.JournalDao
 import com.example.unseenandstrong.data.local.journal.JournalEntryEntity
 import com.example.unseenandstrong.data.local.routine.RoutineDao
@@ -19,9 +21,10 @@ import com.example.unseenandstrong.data.local.script.ScriptEntity
         DailyCheckInEntity::class,
         JournalEntryEntity::class,
         RoutineTaskEntity::class,
-        ScriptEntity::class
+        ScriptEntity::class,
+        InteractionEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class UnseenDatabase : RoomDatabase() {
@@ -30,6 +33,7 @@ abstract class UnseenDatabase : RoomDatabase() {
     abstract fun journalDao(): JournalDao
     abstract fun routineDao(): RoutineDao
     abstract fun scriptDao(): ScriptDao
+    abstract fun interactionDao(): InteractionDao
 
     companion object {
         @Volatile

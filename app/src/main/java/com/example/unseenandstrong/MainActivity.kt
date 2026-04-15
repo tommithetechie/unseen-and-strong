@@ -11,10 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -39,6 +40,8 @@ import com.example.unseenandstrong.data.local.UnseenDatabase
 import com.example.unseenandstrong.ui.checkin.CheckInViewModel
 import com.example.unseenandstrong.ui.checkin.DailyCheckInScreen
 import com.example.unseenandstrong.ui.comfort.ComfortBoxScreen
+import com.example.unseenandstrong.ui.interaction.InteractionScreen
+import com.example.unseenandstrong.ui.interaction.InteractionViewModel
 import com.example.unseenandstrong.ui.journal.JournalScreen
 import com.example.unseenandstrong.ui.journal.JournalViewModel
 import com.example.unseenandstrong.ui.routine.RoutineScreen
@@ -79,6 +82,13 @@ class MainActivity : ComponentActivity() {
             this,
             RoutineViewModel.Factory(database.routineDao())
         )[RoutineViewModel::class.java]
+    }
+
+    private val interactionViewModel: InteractionViewModel by lazy {
+        ViewModelProvider(
+            this,
+            InteractionViewModel.Factory(database.interactionDao())
+        )[InteractionViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,6 +146,10 @@ class MainActivity : ComponentActivity() {
                                             onToggleTask = routineViewModel::toggleTask,
                                             isFlareDay = isFlareDayActive
                                         )
+                                        HomeScreen.Log -> InteractionScreen(
+                                            viewModel = interactionViewModel,
+                                            isFlareDay = isFlareDayActive
+                                        )
                                     }
                                 }
                             }
@@ -151,7 +165,8 @@ private enum class HomeScreen {
     CheckIn,
     ComfortBox,
     Journal,
-    Routine;
+    Routine,
+    Log;
 
     val label: String
         get() = when (this) {
@@ -159,6 +174,7 @@ private enum class HomeScreen {
             ComfortBox -> "Comfort"
             Journal -> "Journal"
             Routine -> "Routine"
+            Log -> "Log"
         }
 
     val icon: ImageVector
@@ -166,7 +182,8 @@ private enum class HomeScreen {
             CheckIn -> Icons.Default.CheckCircle
             ComfortBox -> Icons.Default.Favorite
             Journal -> Icons.Default.Edit
-            Routine -> Icons.Default.List
+            Routine -> Icons.AutoMirrored.Filled.List
+            Log -> Icons.AutoMirrored.Filled.Assignment
         }
 }
 
