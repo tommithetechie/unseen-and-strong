@@ -32,7 +32,8 @@ fun SpeakStrongScreen(
     viewModel: SpeakStrongViewModel,
     isFlareDay: Boolean = false,
     onDraftAdaRequest: () -> Unit = {},
-    onOpenResources: () -> Unit = {}
+    onOpenResources: () -> Unit = {},
+    onOpenBoundaryBuilder: () -> Unit = {}
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val textColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
@@ -70,6 +71,17 @@ fun SpeakStrongScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "Advocacy Resources")
+            }
+
+            Button(
+                onClick = onOpenBoundaryBuilder,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LavenderPurple.copy(alpha = 0.9f),
+                    contentColor = textColor
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Boundary Builder")
             }
 
             // Tone Toggle Row

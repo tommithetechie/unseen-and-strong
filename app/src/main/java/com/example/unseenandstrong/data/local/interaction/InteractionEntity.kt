@@ -8,6 +8,7 @@ data class InteractionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val timestamp: Long,
+    val followUpDateMillis: Long? = null,
     val category: String,
     val personName: String,
     val organization: String,

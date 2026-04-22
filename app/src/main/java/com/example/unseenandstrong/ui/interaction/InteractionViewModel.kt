@@ -25,7 +25,9 @@ class InteractionViewModel(
         category: String,
         personName: String,
         organization: String,
-        notes: String
+        followUpDateMillis: Long?,
+        notes: String,
+        onSaved: (() -> Unit)? = null
     ) {
         val trimmedCategory = category.trim()
         val trimmedPersonName = personName.trim()
@@ -38,12 +40,14 @@ class InteractionViewModel(
             interactionDao.insertInteraction(
                 InteractionEntity(
                     timestamp = System.currentTimeMillis(),
+                    followUpDateMillis = followUpDateMillis,
                     category = trimmedCategory,
                     personName = trimmedPersonName,
                     organization = trimmedOrganization,
                     notes = trimmedNotes
                 )
             )
+            onSaved?.invoke()
         }
     }
 

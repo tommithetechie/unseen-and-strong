@@ -52,6 +52,7 @@ import com.example.unseenandstrong.ui.speakstrong.SpeakStrongScreen
 import com.example.unseenandstrong.ui.speakstrong.SpeakStrongViewModel
 import com.example.unseenandstrong.ui.accommodation.AccommodationScreen
 import com.example.unseenandstrong.ui.accommodation.AccommodationViewModel
+import com.example.unseenandstrong.ui.boundary.BoundaryBuilderScreen
 import com.example.unseenandstrong.ui.resource.ResourceScreen
 import com.example.unseenandstrong.ui.resource.ResourceViewModel
 import com.example.unseenandstrong.ui.vault.VaultScreen
@@ -186,6 +187,9 @@ class MainActivity : ComponentActivity() {
                                             },
                                             onOpenResources = {
                                                 currentScreen = HomeScreen.Resource
+                                            },
+                                            onOpenBoundaryBuilder = {
+                                                currentScreen = HomeScreen.BoundaryBuilder
                                             }
                                         )
                                         HomeScreen.Accommodation -> AccommodationScreen(
@@ -197,6 +201,12 @@ class MainActivity : ComponentActivity() {
                                         )
                                         HomeScreen.Resource -> ResourceScreen(
                                             viewModel = resourceViewModel,
+                                            isFlareDay = isFlareDayActive,
+                                            onBackToHub = {
+                                                currentScreen = HomeScreen.SpeakStrong
+                                            }
+                                        )
+                                        HomeScreen.BoundaryBuilder -> BoundaryBuilderScreen(
                                             isFlareDay = isFlareDayActive,
                                             onBackToHub = {
                                                 currentScreen = HomeScreen.SpeakStrong
@@ -229,6 +239,7 @@ private enum class HomeScreen {
     SpeakStrong,
     Accommodation,
     Resource,
+    BoundaryBuilder,
     Log,
     Vault;
 
@@ -241,6 +252,7 @@ private enum class HomeScreen {
             SpeakStrong -> "Speak Strong"
             Accommodation -> "Accommodation"
             Resource -> "Resources"
+            BoundaryBuilder -> "Boundary Builder"
             Log -> "Log"
             Vault -> "Vault"
         }
@@ -254,6 +266,7 @@ private enum class HomeScreen {
             SpeakStrong -> Icons.Default.Edit
             Accommodation -> Icons.Default.Description
             Resource -> Icons.Default.Description
+            BoundaryBuilder -> Icons.Default.Description
             Log -> Icons.AutoMirrored.Filled.Assignment
             Vault -> Icons.Default.Folder
         }
@@ -274,7 +287,11 @@ private fun BottomNavigationBar(
         HomeScreen.Log,
         HomeScreen.Vault
     )
-    val selectedScreen = if (currentScreen == HomeScreen.Accommodation || currentScreen == HomeScreen.Resource) {
+    val selectedScreen = if (
+        currentScreen == HomeScreen.Accommodation ||
+        currentScreen == HomeScreen.Resource ||
+        currentScreen == HomeScreen.BoundaryBuilder
+    ) {
         HomeScreen.SpeakStrong
     } else currentScreen
 

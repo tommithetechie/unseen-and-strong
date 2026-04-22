@@ -2,6 +2,7 @@ package com.example.unseenandstrong.data.local
 
 import android.content.Context
 import androidx.room.Database
+import androidx.room.migration.Migration
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -27,7 +28,7 @@ import com.example.unseenandstrong.data.local.vault.VaultDocumentEntity
         InteractionEntity::class,
         VaultDocumentEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class UnseenDatabase : RoomDatabase() {
@@ -50,11 +51,20 @@ abstract class UnseenDatabase : RoomDatabase() {
                     UnseenDatabase::class.java,
                     "unseen_database"
                 )
+                    .addMigrations(MIGRATION_6_7)
                     .addCallback(SEED_SCRIPTS_CALLBACK)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
+            }
+        }
+
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE interactions ADD COLUMN followUpDateMillis INTEGER"
+                )
             }
         }
 
