@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -40,25 +39,12 @@ fun ComfortBoxScreen(
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val contrastTextColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
-    val scrollState = rememberScrollState()
+    val reminderCardColor = if (isFlareDay) NightLavender.copy(alpha = 0.82f) else SoftCloudGrey.copy(alpha = 0.8f)
+    val strategyCardColor = if (isFlareDay) LavenderPurple.copy(alpha = 0.22f) else LavenderPurple.copy(alpha = 0.1f)
+
     val context = LocalContext.current
     val reminders = stringArrayResource(id = R.array.gentle_reminders)
     val strategies = stringArrayResource(id = R.array.offline_coping_strategies)
-
-    fun launchIntent(primaryUri: String, fallbackUri: String? = null) {
-        val primaryIntent = Intent(Intent.ACTION_VIEW, Uri.parse(primaryUri))
-        if (primaryIntent.resolveActivity(context.packageManager) != null) {
-            context.startActivity(primaryIntent)
-            return
-        }
-
-        fallbackUri?.let {
-            val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
-            if (fallbackIntent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(fallbackIntent)
-            }
-        }
-    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -68,57 +54,54 @@ fun ComfortBoxScreen(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxSize()
-                .verticalScroll(scrollState),
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Button(
+                onClick = {
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.youtube.com/watch?v=UfcAVejs1Ac")
+                    )
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SoftBlushPink,
+                    contentColor = DeepFogGrey
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             ) {
-                Button(
-                    onClick = {
-                        launchIntent(
-                            primaryUri = "https://www.youtube.com/watch?v=UfcAVejs1Ac"
-                        )
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SoftBlushPink,
-                        contentColor = DeepFogGrey
-                    ),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Watch",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = DeepFogGrey,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        launchIntent(
-                            primaryUri = "spotify:playlist:37i9dQZF1DWZqd5JICZI0u",
-                            fallbackUri = "https://open.spotify.com/playlist/37i9dQZF1DWZqd5JICZI0u"
-                        )
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SoftBlushPink,
-                        contentColor = DeepFogGrey
-                    ),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Listen",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = DeepFogGrey,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                Text(
+                    text = "I'm Struggling - YouTube",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
             }
 
-            // Gentle Reminders Section
+            Button(
+                onClick = {
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://open.spotify.com/")
+                    )
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LavenderPurple,
+                    contentColor = contrastTextColor
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "I'm Struggling - Spotify",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Text(
                 text = "Gentle Reminders",
                 style = MaterialTheme.typography.headlineSmall,
@@ -126,10 +109,11 @@ fun ComfortBoxScreen(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
+
             reminders.forEach { reminder ->
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = SoftCloudGrey.copy(alpha = 0.8f)
+                        containerColor = reminderCardColor
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -149,7 +133,6 @@ fun ComfortBoxScreen(
                 }
             }
 
-            // Offline Coping Strategies Section
             Text(
                 text = "Offline Coping Strategies",
                 style = MaterialTheme.typography.headlineSmall,
@@ -157,10 +140,11 @@ fun ComfortBoxScreen(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
+
             strategies.forEach { strategy ->
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = LavenderPurple.copy(alpha = 0.1f)
+                        containerColor = strategyCardColor
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
