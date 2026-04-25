@@ -28,7 +28,7 @@ import com.example.unseenandstrong.data.local.vault.VaultDocumentEntity
         InteractionEntity::class,
         VaultDocumentEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class UnseenDatabase : RoomDatabase() {
@@ -51,7 +51,7 @@ abstract class UnseenDatabase : RoomDatabase() {
                     UnseenDatabase::class.java,
                     "unseen_database"
                 )
-                    .addMigrations(MIGRATION_6_7)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
                     .addCallback(SEED_SCRIPTS_CALLBACK)
                     .fallbackToDestructiveMigration()
                     .build()
@@ -65,6 +65,44 @@ abstract class UnseenDatabase : RoomDatabase() {
                 db.execSQL(
                     "ALTER TABLE interactions ADD COLUMN followUpDateMillis INTEGER"
                 )
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS interactions_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        timestamp INTEGER NOT NULL,
+                        needsFollowUp INTEGER NOT NULL DEFAULT 0,
+                        followUpDate INTEGER,
+                        category TEXT NOT NULL,
+                        personName TEXT NOT NULL,
+                        organization TEXT NOT NULL,
+                        notes TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+
+                db.execSQL(
+                    """
+                    INSERT INTO interactions_new (id, timestamp, needsFollowUp, followUpDate, category, personName, organization, notes)
+                    SELECT
+                        id,
+                        timestamp,
+                        CASE WHEN followUpDateMillis IS NULL THEN 0 ELSE 1 END,
+                        followUpDateMillis,
+                        category,
+                        personName,
+                        organization,
+                        notes
+                    FROM interactions
+                    """.trimIndent()
+                )
+
+                db.execSQL("DROP TABLE interactions")
+                db.execSQL("ALTER TABLE interactions_new RENAME TO interactions")
             }
         }
 

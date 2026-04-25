@@ -3,6 +3,8 @@ package com.example.unseenandstrong.ui.interaction
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -28,9 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +37,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,8 +51,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.example.unseenandstrong.data.local.interaction.InteractionEntity
+import com.example.unseenandstrong.ui.theme.ButterflyGlow
 import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
@@ -60,8 +63,10 @@ import com.example.unseenandstrong.ui.theme.PaleCloudWhite
 import com.example.unseenandstrong.ui.theme.SoftBlushPink
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.delay
 
 @Composable
@@ -77,6 +82,12 @@ fun InteractionScreen(
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val textColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
     val cardColor = if (isFlareDay) NightLavender.copy(alpha = 0.82f) else SoftCloudGrey
+    var showFollowUpOnly by rememberSaveable { mutableStateOf(false) }
+    val visibleInteractions = if (showFollowUpOnly) {
+        interactions.filter { it.needsFollowUp }
+    } else {
+        interactions
+    }
 
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -110,44 +121,55 @@ fun InteractionScreen(
                 .padding(paddingValues),
             color = backgroundColor
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (interactions.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                FilterChip(
+                    selected = showFollowUpOnly,
+                    onClick = { showFollowUpOnly = !showFollowUpOnly },
+                    label = {
+                        Text(
+                            text = "Follow-up",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = textColor
+                        )
+                    },
+                    colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                        containerColor = SoftCloudGrey,
+                        labelColor = textColor,
+                        selectedContainerColor = ButterflyGlow,
+                        selectedLabelColor = textColor
+                    ),
+                    modifier = Modifier.padding(top = 12.dp, bottom = 8.dp)
+                )
+
+                if (visibleInteractions.isEmpty()) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
-                        verticalArrangement = Arrangement.Center
+                            .padding(top = 32.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "No interactions logged yet.",
+                            text = if (showFollowUpOnly) {
+                                "No follow-ups to review right now."
+                            } else {
+                                "No interactions logged yet."
+                            },
                             style = MaterialTheme.typography.headlineSmall,
-                            color = textColor
-                        )
-                        Text(
-                            text = "Tap the + button to save a call or meeting.",
-                            style = MaterialTheme.typography.bodyMedium,
                             color = textColor
                         )
                     }
                 } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(0.dp)
-                    ) {
-                        itemsIndexed(interactions, key = { _, interaction -> interaction.id }) { index, interaction ->
-                            InteractionTimelineItem(
-                                interaction = interaction,
-                                isFirst = index == 0,
-                                isLast = index == interactions.lastIndex,
-                                backgroundColor = cardColor,
-                                textColor = textColor,
-                                nodeColor = if (index % 2 == 0) LavenderPurple else SoftBlushPink,
-                                lineColor = if (isFlareDay) PaleCloudWhite.copy(alpha = 0.35f) else LavenderPurple.copy(alpha = 0.3f)
-                            )
-                        }
-                    }
+                    InteractionTimelineList(
+                        interactions = visibleInteractions,
+                        isFlareDay = isFlareDay,
+                        cardColor = cardColor,
+                        textColor = textColor
+                    )
                 }
 
                 AnimatedVisibility(
@@ -197,12 +219,13 @@ fun InteractionScreen(
         AddInteractionDialog(
             textColor = textColor,
             onDismiss = { showAddDialog = false },
-            onSave = { category, personName, organization, followUpDateMillis, notes ->
+            onSave = { category, personName, organization, needsFollowUp, followUpDate, notes ->
                 viewModel.saveInteraction(
                     category = category,
                     personName = personName,
                     organization = organization,
-                    followUpDateMillis = followUpDateMillis,
+                    needsFollowUp = needsFollowUp,
+                    followUpDate = followUpDate,
                     notes = notes,
                     onSaved = {
                         showAddDialog = false
@@ -210,6 +233,48 @@ fun InteractionScreen(
                 )
             }
         )
+    }
+}
+
+@Composable
+private fun InteractionTimelineList(
+    interactions: List<InteractionEntity>,
+    isFlareDay: Boolean,
+    cardColor: androidx.compose.ui.graphics.Color,
+    textColor: androidx.compose.ui.graphics.Color
+) {
+    val groupedInteractions = interactions.groupBy { interaction ->
+        formatMonthYear(interaction.timestamp)
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        groupedInteractions.forEach { (monthHeader, monthItems) ->
+            item(key = "header_$monthHeader") {
+                Text(
+                    text = monthHeader,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = DeepFogGrey,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                )
+            }
+
+            itemsIndexed(monthItems, key = { _, interaction -> interaction.id }) { index, interaction ->
+                InteractionTimelineItem(
+                    interaction = interaction,
+                    isFirst = index == 0,
+                    isLast = index == monthItems.lastIndex,
+                    backgroundColor = cardColor,
+                    textColor = textColor,
+                    nodeColor = if (index % 2 == 0) LavenderPurple else SoftBlushPink,
+                    lineColor = DeepFogGrey.copy(alpha = if (isFlareDay) 0.36f else 0.26f)
+                )
+            }
+        }
     }
 }
 
@@ -229,39 +294,41 @@ private fun InteractionTimelineItem(
             .height(IntrinsicSize.Min)
             .padding(vertical = 6.dp)
     ) {
-        Column(
+        Canvas(
             modifier = Modifier
                 .width(28.dp)
-                .fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxHeight()
         ) {
-            if (isFirst) {
-                Spacer(modifier = Modifier.height(10.dp))
-            } else {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .width(2.dp)
-                        .background(lineColor)
+            val centerX = size.width / 2f
+            val centerY = size.height / 2f
+            val nodeRadius = 6.dp.toPx()
+            val lineWidth = 2.dp.toPx()
+
+            if (!isFirst) {
+                drawLine(
+                    color = lineColor,
+                    start = Offset(centerX, 0f),
+                    end = Offset(centerX, centerY - nodeRadius),
+                    strokeWidth = lineWidth,
+                    cap = StrokeCap.Round
                 )
             }
 
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(color = nodeColor, shape = CircleShape)
+            if (!isLast) {
+                drawLine(
+                    color = lineColor,
+                    start = Offset(centerX, centerY + nodeRadius),
+                    end = Offset(centerX, size.height),
+                    strokeWidth = lineWidth,
+                    cap = StrokeCap.Round
+                )
+            }
+
+            drawCircle(
+                color = nodeColor,
+                radius = nodeRadius,
+                center = Offset(centerX, centerY)
             )
-
-            if (isLast) {
-                Spacer(modifier = Modifier.height(10.dp))
-            } else {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .width(2.dp)
-                        .background(lineColor)
-                )
-            }
         }
 
         InteractionCard(
@@ -278,9 +345,17 @@ private fun InteractionCard(
     backgroundColor: androidx.compose.ui.graphics.Color,
     textColor: androidx.compose.ui.graphics.Color
 ) {
+    val isDueForFollowUp = interaction.needsFollowUp &&
+        interaction.followUpDate?.let(::isFollowUpDue) == true
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        border = if (isDueForFollowUp) {
+            BorderStroke(width = 1.dp, color = ButterflyGlow.copy(alpha = 0.9f))
+        } else {
+            null
+        }
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -310,7 +385,14 @@ private fun InteractionCard(
                     color = textColor
                 )
             }
-            interaction.followUpDateMillis?.let { followUpDate ->
+            if (isDueForFollowUp) {
+                Text(
+                    text = "Ready for follow-up when you have the spoons.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LavenderPurple
+                )
+            }
+            interaction.followUpDate?.let { followUpDate ->
                 Text(
                     text = "Follow up by: ${formatDate(followUpDate)}",
                     style = MaterialTheme.typography.bodySmall,
@@ -326,7 +408,6 @@ private fun InteractionCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddInteractionDialog(
     textColor: androidx.compose.ui.graphics.Color,
@@ -335,7 +416,8 @@ private fun AddInteractionDialog(
         category: String,
         personName: String,
         organization: String,
-        followUpDateMillis: Long?,
+        needsFollowUp: Boolean,
+        followUpDate: Long?,
         notes: String
     ) -> Unit
 ) {
@@ -343,9 +425,8 @@ private fun AddInteractionDialog(
     var personName by rememberSaveable { mutableStateOf("") }
     var organization by rememberSaveable { mutableStateOf("") }
     var notes by rememberSaveable { mutableStateOf("") }
-    var followUpDateMillis by rememberSaveable { mutableStateOf<Long?>(null) }
-    var showDatePicker by rememberSaveable { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = followUpDateMillis)
+    var needsFollowUp by rememberSaveable { mutableStateOf(false) }
+    var selectedFollowUpOption by rememberSaveable { mutableStateOf<FollowUpOption?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -412,26 +493,70 @@ private fun AddInteractionDialog(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text(
-                    text = followUpDateMillis?.let { "Follow-up: ${formatDate(it)}" }
-                        ?: "No follow-up date selected",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = textColor
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = { showDatePicker = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = SoftBlushPink,
-                            contentColor = textColor
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Remind me to follow up",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textColor
+                    )
+                    Switch(
+                        checked = needsFollowUp,
+                        onCheckedChange = { checked ->
+                            needsFollowUp = checked
+                            selectedFollowUpOption = if (checked) {
+                                selectedFollowUpOption ?: FollowUpOption.ONE_WEEK
+                            } else {
+                                null
+                            }
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = LavenderPurple,
+                            uncheckedThumbColor = SoftBlushPink,
+                            checkedTrackColor = LavenderPurple.copy(alpha = 0.4f),
+                            uncheckedTrackColor = SoftBlushPink.copy(alpha = 0.4f)
                         )
+                    )
+                }
+
+                if (needsFollowUp) {
+                    Text(
+                        text = "Choose a gentle follow-up window",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textColor.copy(alpha = 0.85f)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Pick Follow-up Date")
-                    }
-                    if (followUpDateMillis != null) {
-                        TextButton(onClick = { followUpDateMillis = null }) {
-                            Text(text = "Clear", color = textColor)
+                        FollowUpOption.entries.forEach { option ->
+                            val isSelected = selectedFollowUpOption == option
+                            Button(
+                                onClick = { selectedFollowUpOption = option },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (isSelected) {
+                                        LavenderPurple
+                                    } else {
+                                        SoftBlushPink.copy(alpha = 0.55f)
+                                    },
+                                    contentColor = textColor
+                                ),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = option.label)
+                            }
                         }
+                    }
+
+                    selectedFollowUpOption?.let { option ->
+                        Text(
+                            text = "Follow-up target: ${formatDate(option.toEpochMillis())}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = textColor
+                        )
                     }
                 }
             }
@@ -440,7 +565,12 @@ private fun AddInteractionDialog(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
-                        onSave(category, personName, organization, followUpDateMillis, notes)
+                        val followUpDate = if (needsFollowUp) {
+                            (selectedFollowUpOption ?: FollowUpOption.ONE_WEEK).toEpochMillis()
+                        } else {
+                            null
+                        }
+                        onSave(category, personName, organization, needsFollowUp, followUpDate, notes)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LavenderPurple,
@@ -463,32 +593,30 @@ private fun AddInteractionDialog(
             }
         }
     )
+}
 
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        followUpDateMillis = datePickerState.selectedDateMillis
-                        showDatePicker = false
-                    }
-                ) {
-                    Text(text = "Save", color = textColor)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(text = "Cancel", color = textColor)
-                }
-            }
-        ) {
-            DatePicker(
-                state = datePickerState,
-                showModeToggle = false
-            )
-        }
+private enum class FollowUpOption(val label: String, private val amount: Long, private val unit: ChronoUnit) {
+    ONE_WEEK("In 1 week", 1, ChronoUnit.WEEKS),
+    TWO_WEEKS("In 2 weeks", 2, ChronoUnit.WEEKS),
+    ONE_MONTH("In 1 month", 1, ChronoUnit.MONTHS);
+
+    fun toEpochMillis(): Long {
+        return LocalDate.now()
+            .plus(amount, unit)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
     }
+}
+
+private fun isFollowUpDue(followUpDate: Long): Boolean {
+    val endOfToday = LocalDate.now()
+        .plusDays(1)
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli() - 1
+
+    return followUpDate <= endOfToday
 }
 
 private fun formatTimestamp(timestamp: Long): String {
@@ -500,6 +628,14 @@ private fun formatTimestamp(timestamp: Long): String {
 
 private fun formatDate(timestamp: Long): String {
     val formatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
+    return Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(formatter)
+}
+
+private fun formatMonthYear(timestamp: Long): String {
+    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy")
     return Instant.ofEpochMilli(timestamp)
         .atZone(ZoneId.systemDefault())
         .toLocalDate()

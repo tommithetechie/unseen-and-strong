@@ -42,7 +42,8 @@ class InteractionViewModel(
         category: String,
         personName: String,
         organization: String,
-        followUpDateMillis: Long?,
+        needsFollowUp: Boolean,
+        followUpDate: Long?,
         notes: String,
         onSaved: (() -> Unit)? = null
     ) {
@@ -57,7 +58,8 @@ class InteractionViewModel(
             interactionDao.insertInteraction(
                 InteractionEntity(
                     timestamp = System.currentTimeMillis(),
-                    followUpDateMillis = followUpDateMillis,
+                    needsFollowUp = needsFollowUp,
+                    followUpDate = followUpDate,
                     category = trimmedCategory,
                     personName = trimmedPersonName,
                     organization = trimmedOrganization,
