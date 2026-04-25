@@ -1,5 +1,8 @@
 package com.example.unseenandstrong.ui.interaction
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
@@ -34,10 +37,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,9 +44,9 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,44 +62,35 @@ import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @Composable
 fun InteractionScreen(
     viewModel: InteractionViewModel,
-    isFlareDay: Boolean = false
+    isFlareDay: Boolean = false,
+    onValidationCompleteNavigateBack: () -> Unit = {}
 ) {
     val interactions by viewModel.interactions.collectAsState()
+    val showValidationOverlay by viewModel.showValidationOverlay.collectAsState()
+    val currentValidationMessage by viewModel.currentValidationMessage.collectAsState()
+
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val textColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
     val cardColor = if (isFlareDay) NightLavender.copy(alpha = 0.82f) else SoftCloudGrey
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    val supportMessages = remember {
-        listOf(
-            "Advocating for yourself is hard work.",
-            "Take a deep breath, it is logged.",
-            "Your boundaries are valid.",
-            "That took care and courage.",
-            "Your voice matters here."
-        )
-    }
 
     var showAddDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showValidationOverlay) {
+        if (showValidationOverlay) {
+            delay(3500)
+            viewModel.dismissValidationOverlay()
+            onValidationCompleteNavigateBack()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = backgroundColor,
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = SoftCloudGrey,
-                    contentColor = textColor
-                )
-            }
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
@@ -120,41 +110,83 @@ fun InteractionScreen(
                 .padding(paddingValues),
             color = backgroundColor
         ) {
-            if (interactions.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "No interactions logged yet.",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = textColor
-                    )
-                    Text(
-                        text = "Tap the + button to save a call or meeting.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = textColor
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
-                ) {
-                    itemsIndexed(interactions, key = { _, interaction -> interaction.id }) { index, interaction ->
-                        InteractionTimelineItem(
-                            interaction = interaction,
-                            isFirst = index == 0,
-                            isLast = index == interactions.lastIndex,
-                            backgroundColor = cardColor,
-                            textColor = textColor,
-                            nodeColor = if (index % 2 == 0) LavenderPurple else SoftBlushPink,
-                            lineColor = if (isFlareDay) PaleCloudWhite.copy(alpha = 0.35f) else LavenderPurple.copy(alpha = 0.3f)
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (interactions.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No interactions logged yet.",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = textColor
                         )
+                        Text(
+                            text = "Tap the + button to save a call or meeting.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textColor
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(0.dp)
+                    ) {
+                        itemsIndexed(interactions, key = { _, interaction -> interaction.id }) { index, interaction ->
+                            InteractionTimelineItem(
+                                interaction = interaction,
+                                isFirst = index == 0,
+                                isLast = index == interactions.lastIndex,
+                                backgroundColor = cardColor,
+                                textColor = textColor,
+                                nodeColor = if (index % 2 == 0) LavenderPurple else SoftBlushPink,
+                                lineColor = if (isFlareDay) PaleCloudWhite.copy(alpha = 0.35f) else LavenderPurple.copy(alpha = 0.3f)
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = showValidationOverlay,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(if (isFlareDay) NightLavender.copy(alpha = 0.68f) else SoftCloudGrey.copy(alpha = 0.72f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isFlareDay) LavenderPurple.copy(alpha = 0.38f) else SoftBlushPink.copy(alpha = 0.48f)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "You showed up for yourself",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = textColor
+                                )
+                                Text(
+                                    text = currentValidationMessage,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = textColor
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -174,12 +206,6 @@ fun InteractionScreen(
                     notes = notes,
                     onSaved = {
                         showAddDialog = false
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = supportMessages[Random.nextInt(supportMessages.size)],
-                                duration = SnackbarDuration.Short
-                            )
-                        }
                     }
                 )
             }

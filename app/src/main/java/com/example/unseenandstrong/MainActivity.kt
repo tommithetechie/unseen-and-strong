@@ -214,7 +214,10 @@ class MainActivity : ComponentActivity() {
                                         )
                                         HomeScreen.Log -> InteractionScreen(
                                             viewModel = interactionViewModel,
-                                            isFlareDay = isFlareDayActive
+                                            isFlareDay = isFlareDayActive,
+                                            onValidationCompleteNavigateBack = {
+                                                currentScreen = HomeScreen.SpeakStrong
+                                            }
                                         )
                                         HomeScreen.Vault -> VaultScreen(
                                             viewModel = vaultViewModel,
