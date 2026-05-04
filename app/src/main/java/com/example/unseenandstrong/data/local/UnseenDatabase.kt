@@ -18,6 +18,10 @@ import com.example.unseenandstrong.data.local.script.ScriptDao
 import com.example.unseenandstrong.data.local.script.ScriptEntity
 import com.example.unseenandstrong.data.local.vault.VaultDocumentDao
 import com.example.unseenandstrong.data.local.vault.VaultDocumentEntity
+import com.example.unseenandstrong.data.local.accommodation.AccommodationRequestEntity
+import com.example.unseenandstrong.data.local.accommodation.AccommodationRequestDao
+import com.example.unseenandstrong.data.local.benefits.BenefitsStageEntity
+import com.example.unseenandstrong.data.local.benefits.BenefitsStageDao
 
 @Database(
     entities = [
@@ -26,9 +30,11 @@ import com.example.unseenandstrong.data.local.vault.VaultDocumentEntity
         RoutineTaskEntity::class,
         ScriptEntity::class,
         InteractionEntity::class,
-        VaultDocumentEntity::class
+        VaultDocumentEntity::class,
+        AccommodationRequestEntity::class,
+        BenefitsStageEntity::class
     ],
-    version = 8,
+    version = 10,
     exportSchema = false
 )
 abstract class UnseenDatabase : RoomDatabase() {
@@ -39,6 +45,8 @@ abstract class UnseenDatabase : RoomDatabase() {
     abstract fun scriptDao(): ScriptDao
     abstract fun interactionDao(): InteractionDao
     abstract fun vaultDocumentDao(): VaultDocumentDao
+    abstract fun accommodationRequestDao(): AccommodationRequestDao
+    abstract fun benefitsStageDao(): BenefitsStageDao
 
     companion object {
         @Volatile
@@ -51,7 +59,7 @@ abstract class UnseenDatabase : RoomDatabase() {
                     UnseenDatabase::class.java,
                     "unseen_database"
                 )
-                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .addCallback(SEED_SCRIPTS_CALLBACK)
                     .fallbackToDestructiveMigration()
                     .build()
@@ -106,6 +114,44 @@ abstract class UnseenDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS accommodation_requests (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        requestType TEXT NOT NULL,
+                        submissionDate INTEGER NOT NULL,
+                        status TEXT NOT NULL,
+                        notes TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS benefits_stages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        stageOrder INTEGER NOT NULL,
+                        stageName TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        dateCompleted INTEGER,
+                        deadlineDate INTEGER,
+                        notes TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (1, 'Initial Application', 'Pending', '')")
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (2, 'Medical Evaluation', 'Pending', '')")
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (3, 'Reconsideration (Appeal 1)', 'Pending', '')")
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (4, 'Hearing (Appeal 2)', 'Pending', '')")
+            }
+        }
+
         private val SEED_SCRIPTS_CALLBACK = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
@@ -148,6 +194,11 @@ abstract class UnseenDatabase : RoomDatabase() {
                     )
                     """.trimIndent()
                 )
+
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (1, 'Initial Application', 'Pending', '')")
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (2, 'Medical Evaluation', 'Pending', '')")
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (3, 'Reconsideration (Appeal 1)', 'Pending', '')")
+                db.execSQL("INSERT INTO benefits_stages (stageOrder, stageName, status, notes) VALUES (4, 'Hearing (Appeal 2)', 'Pending', '')")
             }
         }
     }
