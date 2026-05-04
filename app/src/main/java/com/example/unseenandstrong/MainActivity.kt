@@ -177,6 +177,7 @@ class MainActivity : ComponentActivity() {
                                         HomeScreen.Routine -> RoutineScreen(
                                             tasks = routineTasks,
                                             onToggleTask = routineViewModel::toggleTask,
+                                            onAddTask = routineViewModel::addTask,
                                             isFlareDay = isFlareDayActive
                                         )
                                         HomeScreen.SpeakStrong -> SpeakStrongScreen(

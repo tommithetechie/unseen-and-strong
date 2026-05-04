@@ -32,6 +32,12 @@ class RoutineViewModel(
         }
     }
 
+    fun addTask(taskName: String) {
+        viewModelScope.launch {
+            routineDao.insertTask(RoutineTaskEntity(taskName = taskName))
+        }
+    }
+
     private fun seedDefaultTasksIfEmpty() {
         viewModelScope.launch {
             if (routineDao.getAllTasks().first().isEmpty()) {
@@ -53,4 +59,3 @@ class RoutineViewModel(
         }
     }
 }
-

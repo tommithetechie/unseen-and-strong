@@ -1,5 +1,7 @@
 package com.example.unseenandstrong.ui.journal
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unseenandstrong.data.local.journal.JournalEntryEntity
@@ -210,11 +213,16 @@ fun JournalScreen(
                     ) {
                         entries.forEach { entry ->
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateContentSize(),
                                 colors = CardDefaults.cardColors(containerColor = historyCardColor)
                             ) {
+                                var expanded by remember { mutableStateOf(false) }
                                 Column(
-                                    modifier = Modifier.padding(14.dp),
+                                    modifier = Modifier
+                                        .clickable { expanded = !expanded }
+                                        .padding(14.dp),
                                     verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Text(
@@ -225,7 +233,9 @@ fun JournalScreen(
                                     Text(
                                         text = entry.content,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = contrastTextColor
+                                        color = contrastTextColor,
+                                        maxLines = if (expanded) Int.MAX_VALUE else 2,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = formatTimestamp(entry.timestamp),

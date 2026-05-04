@@ -16,7 +16,22 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -27,24 +42,39 @@ import com.example.unseenandstrong.ui.theme.DeepFogGrey
 import com.example.unseenandstrong.ui.theme.LavenderPurple
 import com.example.unseenandstrong.ui.theme.NightLavender
 import com.example.unseenandstrong.ui.theme.PaleCloudWhite
+import com.example.unseenandstrong.ui.theme.SoftBlushPink
 import com.example.unseenandstrong.ui.theme.SoftCloudGrey
 
 @Composable
 fun RoutineScreen(
     tasks: List<RoutineTaskEntity>,
     onToggleTask: (RoutineTaskEntity) -> Unit,
+    onAddTask: (String) -> Unit = {},
     isFlareDay: Boolean = false
 ) {
     val backgroundColor = if (isFlareDay) NightLavender else SoftCloudGrey
     val contrastTextColor = if (isFlareDay) PaleCloudWhite else DeepFogGrey
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = backgroundColor
-    ) {
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    Scaffold(
+        containerColor = backgroundColor,
+        floatingActionButton = {
+            if (!isFlareDay) {
+                FloatingActionButton(
+                    onClick = { showAddDialog = true },
+                    containerColor = LavenderPurple,
+                    contentColor = PaleCloudWhite
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Goal")
+                }
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(paddingValues)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -133,6 +163,52 @@ fun RoutineScreen(
                     }
                 }
             }
+        }
+
+        if (showAddDialog) {
+            var newTaskName by remember { mutableStateOf("") }
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                containerColor = SoftCloudGrey,
+                title = {
+                    Text(
+                        text = "Add a Tiny Goal",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = DeepFogGrey
+                    )
+                },
+                text = {
+                    OutlinedTextField(
+                        value = newTaskName,
+                        onValueChange = { newTaskName = it },
+                        placeholder = { Text("e.g. Empty dishwasher") },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = SoftBlushPink,
+                            unfocusedBorderColor = LavenderPurple,
+                            focusedTextColor = DeepFogGrey,
+                            unfocusedTextColor = DeepFogGrey
+                        )
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (newTaskName.isNotBlank()) {
+                                onAddTask(newTaskName.trim())
+                                showAddDialog = false
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = LavenderPurple)
+                    ) {
+                        Text("Save", color = PaleCloudWhite)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddDialog = false }) {
+                        Text("Cancel", color = SoftBlushPink)
+                    }
+                }
+            )
         }
     }
 }
